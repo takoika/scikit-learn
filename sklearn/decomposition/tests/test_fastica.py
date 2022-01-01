@@ -7,6 +7,7 @@ import pytest
 import numpy as np
 from scipy import stats
 
+from sklearn.utils._testing import assert_allclose
 from sklearn.utils._testing import assert_almost_equal
 from sklearn.utils._testing import assert_array_almost_equal
 from sklearn.utils._testing import assert_array_equal
@@ -408,3 +409,18 @@ def test_fast_ica_dtype_match(algorithm, fun, data_type, expected_type):
     transformer = FastICA(n_components=7, random_state=0, algorithm=algorithm, fun=fun)
     X_transformed = transformer.fit_transform(X.astype(data_type))
     assert X_transformed.dtype == expected_type
+
+
+@pytest.mark.parametrize("algorithm", ("parallel", "deflation"))
+@pytest.mark.parametrize("fun", ("logcosh", "exp", "cube"))
+def test_fast_ica_numerical_consistency(algorithm, fun):
+    # verify numerically consistent among np.float32 and np.float64
+    from sklearn.datasets import load_digits
+
+    rtol = 1e-1
+    X, _ = load_digits(return_X_y=True)
+    transformer = FastICA(n_components=7, random_state=0, algorithm=algorithm, fun=fun)
+    X_transformed_32 = transformer.fit_transform(X.astype(np.float32))
+    X_transformed_64 = transformer.fit_transform(X.astype(np.float64))
+
+    assert_allclose(X_transformed_32, X_transformed_64, rtol=rtol)
