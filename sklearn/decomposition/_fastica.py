@@ -118,7 +118,6 @@ def _ica_par(X, tol, g, fun_args, max_iter, w_init):
             "tolerance or the maximum number of iterations.",
             ConvergenceWarning,
         )
-
     return W, ii + 1
 
 
@@ -129,7 +128,7 @@ def _logcosh(x, fun_args=None):
 
     x *= alpha
     gx = np.tanh(x, x)  # apply the tanh inplace
-    g_x = np.empty(x.shape[0])
+    g_x = np.empty(x.shape[0], dtype=x.dtype)
     # XXX compute in chunks to avoid extra allocation
     for i, gx_i in enumerate(gx):  # please don't vectorize.
         g_x[i] = (alpha * (1 - gx_i ** 2)).mean()
