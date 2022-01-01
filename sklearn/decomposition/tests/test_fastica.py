@@ -387,3 +387,24 @@ def test_fastica_output_shape(whiten, return_X_mean, return_n_iter):
     assert len(out) == expected_len
     if not whiten:
         assert out[0] is None
+
+
+@pytest.mark.parametrize("algorithm", ("parallel", "deflation"))
+@pytest.mark.parametrize("fun", ("logcosh", "exp", "cube"))
+@pytest.mark.parametrize(
+    "data_type, expected_type",
+    (
+        (np.float32, np.float32),
+        (np.float64, np.float64),
+        (np.int32, np.float64),
+        (np.int64, np.float64),
+    ),
+)
+def test_fast_ica_dtype_match(algorithm, fun, data_type, expected_type):
+    # verify matching input dtype and transformed dtype
+    from sklearn.datasets import load_digits
+
+    X, _ = load_digits(return_X_y=True)
+    transformer = FastICA(n_components=7, random_state=0, algorithm=algorithm, fun=fun)
+    X_transformed = transformer.fit_transform(X.astype(data_type))
+    assert X_transformed.dtype == expected_type
